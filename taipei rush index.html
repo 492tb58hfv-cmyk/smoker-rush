@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>歸納菸民大作戰</title>
+<style>
+:root{--bg:#bfe8f5;--ink:#1d2b36;--card:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#bfe8f5;--ink:#1d2b36;--card:#fff}}
+:root[data-theme="dark"]{--bg:#bfe8f5;--ink:#1d2b36;--card:#fff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;margin:0;background:#16222b;color:var(--ink);font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+body{display:flex;justify-content:center;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#app{position:relative;width:100%;max-width:480px;height:100%;background:linear-gradient(#bfe8f5,#e9f9e4);overflow:hidden;display:flex;flex-direction:column}
+img.px{image-rendering:pixelated}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;background:linear-gradient(#bfe8f5,#e9f9e4);z-index:20}
+.screen.on{display:flex}
+h1{margin:0;font-size:34px;line-height:1.15;text-shadow:3px 3px 0 #fff;letter-spacing:2px}
+.sub{font-size:15px;font-weight:700;color:#2d6a4f;background:#ffffffaa;padding:6px 12px;border:3px solid var(--ink)}
+input{font:inherit;font-size:16px;padding:10px;border:3px solid var(--ink);width:80%;text-align:center;background:#fff;color:var(--ink)}
+button.b{font:inherit;font-weight:800;font-size:18px;padding:12px 26px;border:3px solid var(--ink);background:#ffd60a;color:var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer}
+button.b.alt{background:#fff;font-size:15px;padding:8px 18px}
+button.b:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.note{font-size:12px;color:#444;max-width:90%}
+#hud{display:flex;gap:8px;align-items:center;padding:8px 10px;font-weight:800;z-index:5}
+.chip{font-size:16px;background:#fff;border:3px solid var(--ink);padding:1px 8px;white-space:nowrap}
+#bar{flex:1;height:20px;border:3px solid var(--ink);background:#fff;position:relative}
+#fill{height:100%;width:0;background:#6c757d}
+#bar span{position:absolute;inset:0;font-size:11px;line-height:14px;text-align:center}
+#mute{width:34px;height:30px;font-size:15px;border:3px solid var(--ink);background:#fff;padding:0}
+#q{margin:0 10px;height:58px;background:#ffffffaa;border:3px solid var(--ink);display:flex;align-items:flex-end;gap:2px;padding:3px 6px;overflow:hidden;position:relative}
+#q img{width:22px;flex:none}
+#q img:first-child{outline:3px solid #e63946;outline-offset:1px;margin-right:3px}
+#qn{position:absolute;right:6px;top:2px;font-size:12px;font-weight:800;background:#fff;padding:0 4px}
+#park{margin:8px 10px 0;display:flex;gap:4px;padding:6px;background:#6c7a86;border:3px solid var(--ink);height:84px}
+.sl{flex:1;border:2px dashed #ffffff88;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0}
+.sl img{width:84%;max-width:46px;transition:transform .35s ease-in,opacity .35s}
+.sl.leave img{transform:translateX(120px);opacity:0}
+.pips{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:90%}
+.pips i{width:7px;height:7px;background:#fff4;border:1px solid #fff}
+.pips i.f{background:#fff}
+#wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:6px 10px;min-height:0}
+#board{position:relative;background-color:#dff3fb;border:3px solid var(--ink)}
+.v{position:absolute;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;text-shadow:2px 2px 0 #0007;box-shadow:inset -4px -4px 0 #0003,inset 4px 4px 0 #fff5;cursor:pointer;transition:transform .35s ease-in;touch-action:manipulation}
+.v:after{content:"";position:absolute;left:18%;right:18%;top:14%;height:16%;background:#fff6}
+.shake{animation:sh .25s}
+@keyframes sh{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+#haze{position:absolute;inset:0;pointer-events:none;background:radial-gradient(#9aa0a6,#6c757d);opacity:0;z-index:4}
+#toast{position:absolute;left:0;right:0;top:38%;text-align:center;font-size:38px;font-weight:900;color:#fff;text-shadow:3px 3px 0 var(--ink),-2px -2px 0 var(--ink);z-index:8;opacity:0;pointer-events:none;transition:opacity .4s}
+#big{font-size:52px;font-weight:900;color:#e63946;text-shadow:3px 3px 0 #fff}
+#board2{background:var(--card);border:3px solid var(--ink);width:88%;max-height:40%;overflow:auto;text-align:left;font-size:15px}
+#board2 div{display:flex;justify-content:space-between;padding:6px 10px;border-bottom:2px solid #e9ecef}
+</style>
+</head>
+<body>
+<div id="app">
+<section id="start" class="screen on">
+  <h1>歸納菸民<br>大作戰</h1>
+  <div class="sub">清新台北街頭的空氣</div>
+  <img id="logo" class="px" width="96" alt="">
+  <input id="nick" maxlength="10" placeholder="輸入你的代號" autocomplete="off">
+  <button class="b" id="go">出發載人</button>
+  <button class="b alt" id="lb1">排行榜</button>
+  <div class="note">點車讓它開出去（路上不能有別的車擋著），停進車位後，排隊的菸民會自動上同色的車。車位滿了又沒人能上車就失敗！</div>
+</section>
+
+<div id="hud"><div class="chip" id="score">0 人</div><div id="bar"><div id="fill"></div><span>煙霧濃度</span></div><button id="mute">🔊</button></div>
+<div id="q"></div>
+<div id="park"></div>
+<div id="wrap"><div id="board"></div></div>
+<div id="haze"></div>
+<div id="toast"></div>
+
+<section id="over" class="screen">
+  <h1 id="why">空氣被燻壞了</h1>
+  <div>你把</div><div id="big">0</div><div>位煙民帶到吸煙室了</div>
+  <div class="note" id="saveNote"></div>
+  <button class="b" id="again">再玩一次</button>
+  <button class="b alt" id="lb2">排行榜</button>
+</section>
+<section id="lbs" class="screen" style="z-index:30">
+  <h1>排行榜</h1><div id="board2"></div><div class="note" id="lbNote"></div>
+  <button class="b alt" id="close">返回</button>
+</section>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const COLORS=["#e63946","#3a86ff","#ffd60a","#2ecc71","#9b5de5"];
+const DIRS={U:[0,-1,"↑"],D:[0,1,"↓"],L:[-1,0,"←"],R:[1,0,"→"]};
+const SMOKER=["..hhhh..",".hhhhhh.",".ssssss.",".ssssss"+"bbwo","..ssss..",".cccccc.","scccccc.","scccccc.",".cccccc.",".pppppp.",".pp..pp.",".pp..pp."].map(r=>r.padEnd(11,"."));
+const CAR=["....bbbbbbbb....","...bwwbbbwwb....","..bbwwbbbwwbb...",".bbbbbbbbbbbbbb.",".bbbbbbbbbbbbbbb",".bkkbbbbbbbkkb..","..kkk......kkk.."].map(r=>r.padEnd(16,"."));
+function sprite(map,pal){const c=document.createElement("canvas");c.width=map[0].length;c.height=map.length;const x=c.getContext("2d");
+  map.forEach((r,y)=>[...r].forEach((ch,i)=>{if(pal[ch]){x.fillStyle=pal[ch];x.fillRect(i,y,1,1)}}));return c.toDataURL()}
+const smokerImg=COLORS.map(col=>sprite(SMOKER,{h:"#3b2a20",s:"#f2c9a0",c:col,p:"#34495e",w:"#fff",b:"#7b4a2a",o:"#ff3b1f"}));
+const carImg=COLORS.map(col=>sprite(CAR,{b:col,w:"#d9f2ff",k:"#111"}));
+$("#logo").src=smokerImg[1];
+
+// sound
+let AC=null,muted=false;
+function tone(f,d,t="square",v=.06,s=0){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(AC.destination);
+  const T=AC.currentTime+s;o.start(T);g.gain.exponentialRampToValueAtTime(.001,T+d);o.stop(T+d)}catch(e){}}
+const sfx={go:()=>{tone(300,.08,"triangle");tone(450,.1,"triangle",.05,.06)},tick:()=>tone(880,.05,"square",.04),
+  full:()=>{tone(520,.1);tone(780,.14,"square",.06,.09)},bad:()=>tone(130,.2,"sawtooth",.08),
+  up:()=>[520,660,880].forEach((f,i)=>tone(f,.15,"square",.06,i*.1)),over:()=>[400,330,260,180].forEach((f,i)=>tone(f,.25,"square",.08,i*.2))};
+$("#mute").onclick=()=>{muted=!muted;$("#mute").textContent=muted?"🔇":"🔊"};
+
+// level generation (reverse-placement guarantees a clearing order exists)
+function gen(level){
+  const cols=6+(level>3)+(level>6),rows=7+(level>2)+(level>5),nc=Math.min(5,3+Math.floor(level/2)),dens=Math.min(.78,.5+level*.04);
+  const occ=new Set(),vs=[],K=(x,y)=>x+","+y,keys=Object.keys(DIRS);let cells=0,tries=0;
+  while(cells<cols*rows*dens&&tries++<700){
+    const len=[1,1,2,2,3][Math.random()*5|0],d=keys[Math.random()*4|0],hz=d==="L"||d==="R",w=hz?len:1,h=hz?1:len;
+    const x=Math.random()*(cols-w+1)|0,y=Math.random()*(rows-h+1)|0,cs=[];
+    for(let i=0;i<w;i++)for(let j=0;j<h;j++)cs.push([x+i,y+j]);
+    if(cs.some(([a,b])=>occ.has(K(a,b))))continue;
+    const [dx,dy]=DIRS[d];let px=(dx>0?x+w-1:x)+dx,py=(dy>0?y+h-1:y)+dy,ok=true;
+    while(px>=0&&py>=0&&px<cols&&py<rows){if(occ.has(K(px,py))){ok=false;break}px+=dx;py+=dy}
+    if(!ok)continue;
+    cs.forEach(([a,b])=>occ.add(K(a,b)));cells+=len;vs.push({x,y,w,h,d,len,c:Math.random()*nc|0,cap:len*2});
+  }
+  const q=[];vs.forEach(v=>{for(let i=0;i<v.cap;i++)q.push(v.c)});
+  for(let i=q.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[q[i],q[j]]=[q[j],q[i]]}
+  return {cols,rows,vs,q,slots:4};
+}
+
+// state
+let G=null,raf=0,last=0,CS=40;
+const toast=t=>{const e=$("#toast");e.textContent=t;e.style.opacity=1;setTimeout(()=>e.style.opacity=0,900)};
+function load(level){
+  const L=gen(level);G.level=level;G.cols=L.cols;G.rows=L.rows;G.vs=L.vs;G.queue=L.q;G.parked=Array(L.slots).fill(null);G.boarding=false;G.lock=false;
+  const wrap=$("#wrap");CS=Math.floor(Math.min((wrap.clientWidth-26)/L.cols,(wrap.clientHeight-14)/L.rows,64))||40;
+  const b=$("#board");b.innerHTML="";b.style.width=L.cols*CS+6+"px";b.style.height=L.rows*CS+6+"px";
+  b.style.backgroundImage="linear-gradient(#0001 1px,transparent 1px),linear-gradient(90deg,#0001 1px,transparent 1px)";b.style.backgroundSize=CS+"px "+CS+"px";
+  G.vs.forEach(v=>{const e=document.createElement("div");e.className="v";v.el=e;e.style.cssText+=`left:${v.x*CS+2}px;top:${v.y*CS+2}px;width:${v.w*CS-4}px;height:${v.h*CS-4}px;background:${COLORS[v.c]};font-size:${CS*.55}px`;
+    e.textContent=DIRS[v.d][2];e.onpointerdown=ev=>{ev.preventDefault();tapV(v)};b.appendChild(e)});
+  renderQ();renderPark();
+}
+function renderQ(){const q=$("#q");q.innerHTML=G.queue.slice(0,13).map(c=>`<img class="px" src="${smokerImg[c]}" alt="">`).join("")+`<span id="qn">剩 ${G.queue.length} 人</span>`}
+function renderPark(){$("#park").innerHTML=G.parked.map(p=>p?`<div class="sl${p.leave?" leave":""}"><img class="px" src="${carImg[p.c]}" alt=""><div class="pips">${Array.from({length:p.cap},(_,i)=>`<i class="${i<p.n?"f":""}"></i>`).join("")}</div></div>`:`<div class="sl"></div>`).join("")}
+function shake(el){el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake")}
+function tapV(v){if(!G||G.over||v.gone||G.lock)return;
+  const occ=new Set();G.vs.forEach(o=>{if(!o.gone&&o!==v)for(let i=0;i<o.w;i++)for(let j=0;j<o.h;j++)occ.add((o.x+i)+","+(o.y+j))});
+  const [dx,dy]=DIRS[v.d];let px=(dx>0?v.x+v.w-1:v.x)+dx,py=(dy>0?v.y+v.h-1:v.y)+dy,n=1;
+  while(px>=0&&py>=0&&px<G.cols&&py<G.rows){if(occ.has(px+","+py)){G.smoke+=3;sfx.bad();shake(v.el);return}px+=dx;py+=dy;n++}
+  const slot=G.parked.indexOf(null);if(slot<0){sfx.bad();shake($("#park"));return}
+  v.gone=true;G.parked[slot]={c:v.c,cap:v.cap,n:0,leave:false,reserve:true};
+  v.el.style.transform=`translate(${dx*(n+v.w+1)*CS}px,${dy*(n+v.h+1)*CS}px)`;sfx.go();
+  setTimeout(()=>{v.el.remove();G.parked[slot].reserve=false;renderPark();kick()},330);
+  G.parked[slot].hidden=true;renderPark();
+}
+function kick(){if(G.boarding||G.over)return;G.boarding=true;step()}
+function step(){if(G.over)return;
+  if(!G.queue.length){G.boarding=false;return clearLevel()}
+  const f=G.queue[0],i=G.parked.findIndex(p=>p&&!p.reserve&&!p.leave&&p.c===f&&p.n<p.cap);
+  if(i<0){G.boarding=false;return check()}
+  const p=G.parked[i];G.queue.shift();p.n++;G.score++;G.smoke=Math.max(0,G.smoke-2.5);sfx.tick();$("#score").textContent=G.score+" 人";
+  if(p.n===p.cap){p.leave=true;sfx.full();setTimeout(()=>{G.parked[i]=null;renderPark();if(!G.boarding)kick()},380)}
+  renderQ();renderPark();setTimeout(step,170)}
+function check(){if(G.over||!G.queue.length)return;
+  const full=G.parked.every(p=>p),busy=G.parked.some(p=>p&&(p.leave||p.reserve));
+  if(full&&!busy&&!G.parked.some(p=>p.c===G.queue[0]&&p.n<p.cap))end("車位滿了，沒有車能載走排頭的菸民")}
+function clearLevel(){if(G.lock)return;G.lock=true;sfx.up();toast("全部載走！");G.smoke=Math.max(0,G.smoke-30);setTimeout(()=>{if(!G.over){load(G.level+1)}},1100)}
+function frame(t){raf=requestAnimationFrame(frame);const dt=Math.min(.05,(t-last)/1000);last=t;if(!G||G.over)return;
+  G.smoke+=(.7+.08*G.level)*dt;const p=Math.min(100,G.smoke);
+  $("#fill").style.width=p+"%";$("#fill").style.background=p>70?"#e63946":p>40?"#f4a261":"#6c757d";$("#haze").style.opacity=Math.pow(p/100,1.3)*.85;
+  if(G.smoke>=100)end("空氣被燻壞了")}
+
+// leaderboard
+let DB=null;
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+(async()=>{try{DB=await claude.use("db")}catch(e){DB=null}})();
+const nick=()=>($("#nick").value.trim()||"路人甲").slice(0,10);
+$("#nick").value=store.get("nick")||"";
+async function saveScore(name,score){let shared=false;
+  if(DB){try{await DB.collection("scores").add({name,score,t:Date.now()});shared=true}catch(e){}}
+  let loc=[];try{loc=JSON.parse(store.get("lb2")||"[]")}catch(e){}
+  loc.push({name,score,t:Date.now()});loc.sort((a,b)=>b.score-a.score);store.set("lb2",JSON.stringify(loc.slice(0,10)));return shared}
+async function showBoard(){$("#lbs").classList.add("on");const b=$("#board2");b.textContent="載入中…";$("#lbNote").textContent="";let rows=null;
+  if(DB){try{const q=await DB.collection("scores").orderBy("score","desc").limit(10).get();rows=q.docs.map(d=>d.data())}catch(e){}}
+  if(!rows){try{rows=JSON.parse(store.get("lb2")||"[]")}catch(e){rows=[]}$("#lbNote").textContent="目前顯示的是這台裝置上的紀錄（全球排行榜需登入 Claude 後才能使用）"}
+  b.innerHTML="";if(!rows.length){b.textContent="還沒有人上榜，快來當第一個！";return}
+  rows.forEach((r,i)=>{const d=document.createElement("div"),a=document.createElement("span"),c=document.createElement("b");a.textContent=(i+1)+". "+r.name;c.textContent=r.score+" 人";d.append(a,c);b.appendChild(d)})}
+
+function start(){store.set("nick",nick());$("#start").classList.remove("on");$("#over").classList.remove("on");
+  G={score:0,smoke:0,over:false};$("#score").textContent="0 人";$("#fill").style.width="0";$("#haze").style.opacity=0;
+  load(1);last=performance.now();tone(660,.1);cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
+async function end(why){if(G.over)return;G.over=true;sfx.over();$("#why").textContent=why;$("#big").textContent=G.score;$("#saveNote").textContent="儲存成績中…";$("#over").classList.add("on");
+  const shared=await saveScore(nick(),G.score);$("#saveNote").textContent=shared?"成績已上傳到排行榜":"成績已存在這台裝置"}
+$("#go").onclick=start;$("#again").onclick=start;$("#lb1").onclick=$("#lb2").onclick=showBoard;$("#close").onclick=()=>$("#lbs").classList.remove("on");
+</script>
+</body>
+</html>
