@@ -168,18 +168,18 @@ function frame(t){raf=requestAnimationFrame(frame);const dt=Math.min(.05,(t-last
   if(G.smoke>=100)end("空氣被燻壞了")}
 
 // leaderboard
-let DB=null;
+let DB=null;const LB_URL="https://script.google.com/macros/s/AKfycbx9nbfCV6420bI03z8e2lQs7N96NU8aOzK2kSgJc1mXkQQb8p6zfn8iZaOpnCXY4xZELA/exec";
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 (async()=>{try{DB=await claude.use("db")}catch(e){DB=null}})();
 const nick=()=>($("#nick").value.trim()||"路人甲").slice(0,10);
 $("#nick").value=store.get("nick")||"";
 async function saveScore(name,score){let shared=false;
-  if(DB){try{await DB.collection("scores").add({name,score,t:Date.now()});shared=true}catch(e){}}
+  if(LB_URL){try{await fetch(LB_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({name,score})});shared=true}catch(e){}}else if(DB){try{await DB.collection("scores").add({name,score,t:Date.now()});shared=true}catch(e){}}
   let loc=[];try{loc=JSON.parse(store.get("lb2")||"[]")}catch(e){}
   loc.push({name,score,t:Date.now()});loc.sort((a,b)=>b.score-a.score);store.set("lb2",JSON.stringify(loc.slice(0,10)));return shared}
 async function showBoard(){$("#lbs").classList.add("on");const b=$("#board2");b.textContent="載入中…";$("#lbNote").textContent="";let rows=null;
-  if(DB){try{const q=await DB.collection("scores").orderBy("score","desc").limit(10).get();rows=q.docs.map(d=>d.data())}catch(e){}}
-  if(!rows){try{rows=JSON.parse(store.get("lb2")||"[]")}catch(e){rows=[]}$("#lbNote").textContent="目前顯示的是這台裝置上的紀錄（全球排行榜需登入 Claude 後才能使用）"}
+  if(LB_URL){try{const r=await fetch(LB_URL);rows=await r.json()}catch(e){}}else if(DB){try{const q=await DB.collection("scores").orderBy("score","desc").limit(10).get();rows=q.docs.map(d=>d.data())}catch(e){}}
+  if(!rows){try{rows=JSON.parse(store.get("lb2")||"[]")}catch(e){rows=[]}$("#lbNote").textContent="目前顯示的是這台裝置上的紀錄（共用排行榜暫時連不上）"}
   b.innerHTML="";if(!rows.length){b.textContent="還沒有人上榜，快來當第一個！";return}
   rows.forEach((r,i)=>{const d=document.createElement("div"),a=document.createElement("span"),c=document.createElement("b");a.textContent=(i+1)+". "+r.name;c.textContent=r.score+" 人";d.append(a,c);b.appendChild(d)})}
 
